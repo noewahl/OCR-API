@@ -2,18 +2,36 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OCR PDF</title>
+    <!-- Lien vers le CSS de Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Envoyer un fichier PDF pour extraire le texte</h1>
-    <form action="/extract_text" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".pdf" required>
-        <button type="submit">Extraire le texte</button>
-    </form>
+<body class="bg-light">
 
-    {% if extracted_text %}
-        <h2>Texte extrait :</h2>
-        <pre>{{ extracted_text }}</pre>
-    {% endif %}
+    <div class="container mt-5">
+        <h1 class="text-center">Envoyer un fichier PDF pour extraire le texte</h1>
+        
+        <!-- Formulaire pour uploader un fichier -->
+        <form action="/extract_text" method="POST" enctype="multipart/form-data" class="mt-4">
+            <div class="form-group">
+                <label for="file">Choisir un fichier PDF</label>
+                <input type="file" class="form-control-file" name="file" id="file" accept=".pdf" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Extraire le texte</button>
+        </form>
+
+        {% if extracted_text %}
+        <div class="mt-4">
+            <h2>Texte extrait :</h2>
+            <pre class="bg-light p-3 rounded">{{ extracted_text }}</pre>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Lien vers les scripts Bootstrap (optionnel pour certaines fonctionnalités comme le menu mobile) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
