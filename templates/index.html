@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>OCR PDF</title>
+</head>
+<body>
+    <h1>Envoyer un fichier PDF pour extraire le texte</h1>
+    <form action="/extract_text" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf" required>
+        <button type="submit">Extraire le texte</button>
+    </form>
+
+    {% if extracted_text %}
+        <h2>Texte extrait :</h2>
+        <pre>{{ extracted_text }}</pre>
+    {% endif %}
+</body>
+</html>
