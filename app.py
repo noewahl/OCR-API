@@ -20,7 +20,6 @@ def extract_text():
 
     file_path = os.path.join("uploads", file.filename)
     file.save(file_path)
-
     images = convert_from_path(file_path)
     extracted_text = "\n".join([pytesseract.image_to_string(img) for img in images])
 
@@ -28,4 +27,4 @@ def extract_text():
     return render_template('index.html', extracted_text=extracted_text)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
