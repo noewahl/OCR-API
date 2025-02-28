@@ -18,7 +18,8 @@ def extract_text():
     
     if not file.filename.endswith(('.pdf','.png','.jpg','.jpeg')):
         return jsonify({'error': 'Only PDF, png, jpg and jpeg files are allowed'}), 400
-
+    
+    os.makedirs('uploads', exist_ok=True)
     file_path = os.path.join("uploads", file.filename)
     file.save(file_path)
     
