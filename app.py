@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, jsonify
 import pytesseract
 from pdf2image import convert_from_path
 import os
-from src.ocr.processing import string_to_df, draw_boxes_from_data
+from src.ocr.processing import draw_box, draw_boxes_from_data, string_to_df, save_file, extract_text_pytesseract, file_to_image, check_file
 from PIL import Image
 import base64
 from io import BytesIO
@@ -20,22 +20,19 @@ def extract_text():
 
     file = request.files['file']
     
-    if not file.filename.endswith(('.pdf','.png','.jpg','.jpeg')):
-        return jsonify({'error': 'Only PDF, png, jpg and jpeg files are allowed'}), 400
+    supported, _ = check_file(file.filename)
     
+    if not supported:
+        return jsonify({'error': 'Only PDF, png, jpg and jpeg files are allowed'}), 400
 
     # if the folder uploads/ doesn't exist it creates it
-    os.makedirs('uploads', exist_ok=True)
-    file_path = os.path.join("uploads", file.filename)
-    file.save(file_path)
+    file_path = save_file(file)
+    images = file_to_image(file_path)
+    extracted_text = extract_text_pytesseract(images)
     
     if file.filename.endswith('.pdf'):
-        images = convert_from_path(file_path)
-        extracted_text = "\n".join([pytesseract.image_to_string(img) for img in images])
         image_draw_boxes = None
     else :
-        images = Image.open(file_path)
-        extracted_text = pytesseract.image_to_string(images)
         extracted_data = pytesseract.image_to_data(images)
         extracted_data = string_to_df(extracted_data)
         extracted_data = extracted_data[extracted_data["conf"] != -1]

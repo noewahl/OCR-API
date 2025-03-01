@@ -1,9 +1,15 @@
 from PIL import ImageDraw, ImageFont, Image
+from pdf2image import convert_from_path
 import pandas as pd
 import io
+import os
+from typing import Union, List
+import pytesseract
 
 # list of all suported files
 SUPPORTED_FILES = (".pdf", ".jpeg", ".png", ".jpg")
+UPLOADS_PATH = "uploads"
+
 
 
 def string_to_df(string_data: str, sep: str = "\s+") -> pd.DataFrame:
@@ -113,7 +119,7 @@ def draw_boxes_from_data(
 
 
 def check_file(file_path: str) -> bool:
-    """Check if the file has a supported extension.
+    """Check if the file has a supported extension and return the extension.
 
     Args:
         file_path (str): Path to the file to check
@@ -121,13 +127,51 @@ def check_file(file_path: str) -> bool:
     Returns:
         bool: True if file has a supported extension (.pdf, .png, .jpg, .jpeg),
               False otherwise
+        str: Extension name
 
     Example:
         >>> check_file("document.pdf")
-        True
+        True, ".pdf"
         >>> check_file("image.txt")
-        False
+        False, ".txt"
     """
-    return file_path.lower().endswith(SUPPORTED_FILES)
+    _, extension = os.path.splitext(file_path)
+    return extension in SUPPORTED_FILES, extension
 
+def save_file(file):
+    os.makedirs(UPLOADS_PATH, exist_ok=True)
+    file_path = os.path.join("uploads", file.filename)
+    file.save(file_path)
+    return file_path
+    
 
+def file_to_image(file_path:str)->Image.Image:
+    supported, extension = check_file(file_path)
+    if supported : 
+        if extension == '.pdf':
+            images = convert_from_path(file_path)
+        else:
+            images = Image.open(file_path)
+        return images
+    else:
+        return None
+            
+def extract_text_pytesseract(images: Union[Image.Image, List[Image.Image]]) -> str:
+    """Extract text from a single image or list of images using pytesseract.
+
+    Args:
+        image (Union[Image.Image, List[Image.Image]]): Single PIL Image or list of PIL Images
+
+    Returns:
+        str: Extracted text from the image(s)
+
+    Example:
+        >>> img = Image.open("example.png")
+        >>> text = extract_text_pytesseract(img)
+        >>> 
+        >>> pdf_images = convert_from_path("document.pdf")
+        >>> text = extract_text_pytesseract(pdf_images)
+    """
+    if isinstance(images, list):
+        return "\n".join(pytesseract.image_to_string(img) for img in images)
+    return pytesseract.image_to_string(images)
