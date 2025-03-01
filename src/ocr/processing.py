@@ -2,6 +2,9 @@ from PIL import ImageDraw, ImageFont, Image
 import pandas as pd
 import io
 
+# list of all suported files
+SUPPORTED_FILES = (".pdf", ".jpeg", ".png", ".jpg")
+
 
 def string_to_df(string_data: str, sep: str = "\s+") -> pd.DataFrame:
     """Transform pytesseract image_to_data output string into a pandas DataFrame.
@@ -21,10 +24,17 @@ def string_to_df(string_data: str, sep: str = "\s+") -> pd.DataFrame:
     return df_data
 
 
-def draw_box(image: Image.Image, left: int, top: int, width: int, height: int, 
-            conf: float, text: str) -> Image.Image:
+def draw_box(
+    image: Image.Image,
+    left: int,
+    top: int,
+    width: int,
+    height: int,
+    conf: float,
+    text: str,
+) -> Image.Image:
     """Draw a red rectangle with text on a PIL Image.
-    
+
     Args:
         image (Image.Image): PIL Image object to draw on
         left (int): X coordinate for left side of box
@@ -33,10 +43,10 @@ def draw_box(image: Image.Image, left: int, top: int, width: int, height: int,
         height (int): Height of the bounding box
         conf (float): Confidence score (between 0 and 1)
         text (str): Text to display above the box
-    
+
     Returns:
         Image.Image: New image with drawn box and text
-    
+
     Example:
         >>> img = Image.open("example.png")
         >>> result = draw_box(img, left=100, top=100, width=50, height=30, conf=0.95, text="Hello")
@@ -67,9 +77,11 @@ def draw_box(image: Image.Image, left: int, top: int, width: int, height: int,
     return image_with_box
 
 
-def draw_boxes_from_data(image: Image.Image, extracted_data: pd.DataFrame) -> Image.Image:
+def draw_boxes_from_data(
+    image: Image.Image, extracted_data: pd.DataFrame
+) -> Image.Image:
     """Draw all bounding boxes extracted from the image with their associated text and confidence.
-    
+
     Args:
         image (Image.Image): PIL Image object to draw on
         extracted_data (pd.DataFrame): DataFrame containing OCR data with columns:
@@ -79,10 +91,10 @@ def draw_boxes_from_data(image: Image.Image, extracted_data: pd.DataFrame) -> Im
             - height: Height of box
             - conf: Confidence score (0-100)
             - text: Detected text
-    
+
     Returns:
         Image.Image: New image with all bounding boxes and texts drawn
-    
+
     Example:
         >>> img = Image.open("example.png")
         >>> ocr_data = string_to_df(pytesseract.image_to_data(img))
@@ -98,3 +110,24 @@ def draw_boxes_from_data(image: Image.Image, extracted_data: pd.DataFrame) -> Im
         text = box.text
         image_draw = draw_box(image_draw, left, top, width, height, conf, text)
     return image_draw
+
+
+def check_file(file_path: str) -> bool:
+    """Check if the file has a supported extension.
+
+    Args:
+        file_path (str): Path to the file to check
+
+    Returns:
+        bool: True if file has a supported extension (.pdf, .png, .jpg, .jpeg),
+              False otherwise
+
+    Example:
+        >>> check_file("document.pdf")
+        True
+        >>> check_file("image.txt")
+        False
+    """
+    return file_path.lower().endswith(SUPPORTED_FILES)
+
+
