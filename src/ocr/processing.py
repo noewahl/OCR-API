@@ -175,3 +175,22 @@ def extract_text_pytesseract(images: Union[Image.Image, List[Image.Image]]) -> s
     if isinstance(images, list):
         return "\n".join(pytesseract.image_to_string(img) for img in images)
     return pytesseract.image_to_string(images)
+
+def extract_data_pytesseract(images:Image.Image)->pd.DataFrame:
+    """Extract data from a single image.
+    
+    Args: 
+        image (Image.Image): Single PIL Image
+        
+    Returns:
+        str: Extracted data from the image in a DataFrame
+        
+    Example:
+        >>> img = Image.open("example.png")
+        >>> data = extracted_data_pytesseract(image)
+        >>> data.head()
+    """
+    extracted_data = pytesseract.image_to_data(images)
+    extracted_data = string_to_df(extracted_data)
+    extracted_data = extracted_data[extracted_data["conf"] != -1]
+    return extracted_data

@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, jsonify
 import pytesseract
 from pdf2image import convert_from_path
 import os
-from src.ocr.processing import draw_box, draw_boxes_from_data, string_to_df, save_file, extract_text_pytesseract, file_to_image, check_file
+from src.ocr.processing import draw_box, draw_boxes_from_data, string_to_df, save_file, extract_text_pytesseract, file_to_image, check_file, extract_data_pytesseract
 from PIL import Image
 import base64
 from io import BytesIO
@@ -33,11 +33,8 @@ def extract_text():
     if file.filename.endswith('.pdf'):
         image_draw_boxes = None
     else :
-        extracted_data = pytesseract.image_to_data(images)
-        extracted_data = string_to_df(extracted_data)
-        extracted_data = extracted_data[extracted_data["conf"] != -1]
+        extracted_data = extract_data_pytesseract(images)
         image_draw_boxes = draw_boxes_from_data(images, extracted_data)
-        
         buffered = BytesIO()
         image_draw_boxes.save(buffered, format="PNG")
         image_draw_boxes = base64.b64encode(buffered.getvalue()).decode()
