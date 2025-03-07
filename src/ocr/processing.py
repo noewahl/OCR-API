@@ -193,4 +193,124 @@ def extract_data_pytesseract(images:Image.Image)->pd.DataFrame:
     extracted_data = pytesseract.image_to_data(images)
     extracted_data = string_to_df(extracted_data)
     extracted_data = extracted_data[extracted_data["conf"] != -1]
+    extracted_data = extracted_data[
+    extracted_data["text"].notna() &  # Remove NaN values
+    (extracted_data["text"] != "") &  # Remove empty strings
+    (extracted_data["text"].str.strip() != "")  # Remove whitespace-only strings
+]
     return extracted_data
+
+def overwrite_image_from_data(image: Image.Image, extracted_data: pd.DataFrame)->Image.Image:
+    """Overwrite all detected text in an image with white rectangles containing black centered text.
+
+    Args:
+        image (Image.Image): PIL Image object to process
+        extracted_data (pd.DataFrame): DataFrame containing OCR data with columns:
+            - left: X coordinate of box
+            - top: Y coordinate of box
+            - width: Width of box
+            - height: Height of box
+            - conf: Confidence score (0-100)
+            - text: Detected text
+
+    Returns:
+        Image.Image: New image with all detected text overwritten in white rectangles
+
+    Example:
+        >>> img = Image.open("example.png")
+        >>> ocr_data = extract_data_pytesseract(img)
+        >>> result = overwrite_image_from_data(img, ocr_data)
+    """
+    image_overwrite = image.copy()
+    for box in extracted_data.itertuples():
+        left = box.left
+        top = box.top
+        width = box.width
+        height = box.height
+        #conf = box.conf / 100  # Convert confidence to 0-1 range
+        text = box.text
+        image_overwrite= overwrite(image_overwrite, left, top, width, height, text)
+    return image_overwrite
+    
+def overwrite(
+    image: Image.Image,
+    left: int,
+    top: int,
+    width: int,
+    height: int,
+    text: str,
+) -> Image.Image:
+    """Draw a white rectangle with centered black text over the original text.
+
+    Args:
+        image (Image.Image): PIL Image object to draw on
+        left (int): X coordinate for left side of box
+        top (int): Y coordinate for top of box
+        width (int): Width of the bounding box
+        height (int): Height of the bounding box
+        text (str): Text to display inside the box
+
+    Returns:
+        Image.Image: New image with text overwritten in white rectangle
+
+    Example:
+        >>> img = Image.open("example.png")
+        >>> result = overwrite(img, left=100, top=100, width=50, height=30, text="Hello")
+    """
+    image_with_overwritten_text = image.copy()
+    draw = ImageDraw.Draw(image_with_overwritten_text)
+
+    # Draw the white rectangle
+    right = left + width
+    bottom = top + height
+    draw.rectangle([(left, top), (right, bottom)], outline="black", width=2, fill='white')
+
+    # Calculate initial font size based on box height
+    font_size = min(height - 4, width // len(text))  # Start with box height minus padding
+    
+    # Binary search to find the best font size that fits
+    min_size = 8  # Minimum readable size
+    max_size = font_size
+    best_size = min_size
+    
+    while min_size <= max_size:
+        current_size = (min_size + max_size) // 2
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", current_size)
+        except:
+            font = ImageFont.load_default()
+            break
+
+        # Get text dimensions
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+
+        # Check if text fits with some padding
+        if text_width <= width - 4 and text_height <= height - 4:
+            best_size = current_size
+            min_size = current_size + 1
+        else:
+            max_size = current_size - 1
+
+    # Use the best fitting font size
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", best_size)
+    except:
+        font = ImageFont.load_default()
+
+    # Get final text dimensions
+    text_bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+
+    # Center the text
+    x = left + (width - text_width) // 2
+    y = top + (height - text_height) // 2
+
+    # Draw the text
+    draw.text((x, y), text, fill="black", font=font)
+
+    return image_with_overwritten_text
+
+
