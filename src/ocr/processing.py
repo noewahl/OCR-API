@@ -6,8 +6,9 @@ import os
 from typing import Union, List
 import pytesseract
 
-# list of all suported files
+# list of supported files
 SUPPORTED_FILES = (".pdf", ".jpeg", ".png", ".jpg")
+# path to the uploads folder
 UPLOADS_PATH = "uploads"
 
 
@@ -139,6 +140,17 @@ def check_file(file_path: str) -> bool:
     return extension in SUPPORTED_FILES, extension
 
 def save_file(file):
+    """Save the uploaded file to the uploads folder.
+    
+    Args:
+        file (FileStorage): File to save
+        
+    Returns:
+        str: Path to the saved file
+        
+    Example:
+        >>> file_path = save_file(file)
+    """
     os.makedirs(UPLOADS_PATH, exist_ok=True)
     file_path = os.path.join("uploads", file.filename)
     file.save(file_path)
@@ -146,6 +158,17 @@ def save_file(file):
     
 
 def file_to_image(file_path:str)->Image.Image:
+    """Convert a file to a PIL Image object.
+    
+    Args:
+        file_path (str): Path to the file to convert
+        
+    Returns:
+        Image.Image: PIL Image object
+    
+    Example:
+        >>> image = file_to_image("example.png")
+    """
     supported, extension = check_file(file_path)
     if supported : 
         if extension == '.pdf':
