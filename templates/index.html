@@ -117,42 +117,25 @@
 
     <!-- LLM Resume Section -->
     {% if extracted_text %}
-    <section class="card mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h3 class="card-title h5 mb-0">Resume by LLM</h3>
-            <button type="button" class="btn btn-light btn-sm" onclick="generateResume()">
-                Generate Resume
-            </button>
-        </div>
-        <div class="card-body">
-            <div id="resumeContent" class="bg-light p-3 rounded" style="min-height: 100px;">
-                <div class="text-center text-muted" id="placeholder">
-                    Click "Generate Resume" to analyze the extracted text
+<section class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="card-title h5 mb-0">Summary</h3>
+    </div>
+    <div class="card-body">
+        <div class="bg-light p-3 rounded" style="min-height: 100px;">
+            {% if summarized_text %}
+                <pre class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;">{{ summarized_text }}</pre>
+            {% else %}
+                <div class="text-center text-muted">
+                    No summary available
                 </div>
-            </div>
+            {% endif %}
         </div>
-    </section>
-    {% endif %}
+    </div>
+    </div>
+</section>
+{% endif %}
 </div>
-
-<!-- Add this before the existing script tags -->
-<script>
-    function generateResume() {
-        const button = event.target;
-        const placeholder = document.getElementById('placeholder');
-        button.disabled = true;
-        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
-        
-        // Here you would make an API call to your LLM endpoint
-        // For now, we'll just simulate a delay
-        setTimeout(() => {
-            placeholder.innerHTML = "This is a simulated LLM resume of the extracted text...";
-            button.innerHTML = "Generate Resume";
-            button.disabled = false;
-        }, 2000);
-    }
-</script>
-
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

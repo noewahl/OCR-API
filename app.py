@@ -6,6 +6,7 @@ from src.ocr.processing import draw_box, draw_boxes_from_data, string_to_df, sav
 from PIL import Image
 import base64
 from io import BytesIO
+from src.llm.summarizer import TextSummarizer
 
 app = Flask(__name__)
 
@@ -40,7 +41,11 @@ def extract_text():
         image_draw_boxes.save(buffered, format="PNG")
         image_draw_boxes = base64.b64encode(buffered.getvalue()).decode()
     os.remove(file_path)  
-    return render_template('index.html', extracted_text=extracted_text, image_draw_boxes = image_draw_boxes)
+    
+    summarizer = TextSummarizer()
+    summarized_text = summarizer.summarize(extracted_text)
+    
+    return render_template('index.html', extracted_text=extracted_text, image_draw_boxes = image_draw_boxes, summarized_text = summarized_text)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
